@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Command Practice</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Linux Command Practice</h1>
+        
+        <div id="workshop-selector" class="workshop-selector">
+            <h2>Choose a Workshop</h2>
+            <div id="workshop-list"></div>
+        </div>
+
+        <div id="workshop-container" class="workshop-container" style="display: none;">
+            <div class="workshop-header">
+                <button id="back-btn" class="btn">← Back to Workshops</button>
+                <h2 id="workshop-title"></h2>
+                <div id="step-navigation" class="step-navigation"></div>
+            </div>
+            
+            <div class="instruction-box">
+                <h3>Task:</h3>
+                <p id="instruction-text"></p>
+                <button id="hint-btn" class="btn btn-small">Show Hint</button>
+                <p id="hint-text" class="hint" style="display: none;"></p>
+                <p id="success-message" class="success-message-box" style="display: none;"></p>
+            </div>
+
+            <div id="terminal">
+                <div id="output"></div>
+                <div class="input-line">
+                    <span class="prompt">user@practice:~$</span>
+                    <input type="text" id="command-input" autocomplete="off">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('Loading workshops...');
+    </script>
+    <script src="workshops.js?v=4"></script>
+    <script>
+        console.log('Workshops loaded:', typeof workshops !== 'undefined');
+        console.log('Workshop count:', workshops ? workshops.length : 0);
+    </script>
+    <script src="app.js?v=4"></script>
+    <script>
+        console.log('App.js loaded');
+        console.log('Terminal created:', typeof terminal !== 'undefined');
+    </script>
+</body>
+</html>

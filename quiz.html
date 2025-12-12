@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workshop Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f6f7;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #0a0a23;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .quiz-box {
+            background: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .question {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0a0a23;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #d0d0d5;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            border-color: #198eee;
+            background: #f0f8ff;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .option label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .submit-btn {
+            background: #198eee;
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #0a0a23;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            background: #fff;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .result h2 {
+            color: #0a0a23;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .pass {
+            color: #28a745;
+        }
+
+        .fail {
+            color: #dc3545;
+        }
+
+        .result-message {
+            font-size: 20px;
+            margin: 20px 0;
+        }
+
+        .retry-btn {
+            background: #198eee;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+
+        .retry-btn:hover {
+            background: #0a0a23;
+        }
+
+        .progress {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="quiz-title">Workshop Quiz</h1>
+        
+        <div id="quiz-container"></div>
+        
+        <div class="result" id="result">
+            <h2>Quiz Complete!</h2>
+            <div class="score" id="score"></div>
+            <div class="result-message" id="result-message"></div>
+            <button class="retry-btn" onclick="retakeQuiz()">Retake Quiz</button>
+            <button class="retry-btn" onclick="window.close()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let quizData = null;
+        let userAnswers = {};
+
+        // Get quiz data from URL parameters or localStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const workshopId = urlParams.get('workshop');
+            
+            if (workshopId) {
+                const quizDataStr = localStorage.getItem(`quiz_${workshopId}`);
+                if (quizDataStr) {
+                    quizData = JSON.parse(quizDataStr);
+                    document.getElementById('quiz-title').textContent = quizData.title + ' - Quiz';
+                    renderQuiz();
+                }
+            }
+        });
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            quizData.questions.forEach((q, index) => {
+                const quizBox = document.createElement('div');
+                quizBox.className = 'quiz-box';
+                quizBox.innerHTML = `
+                    <div class="progress">Question ${index + 1} of ${quizData.questions.length}</div>
+                    <div class="question">${q.question}</div>
+                    <div class="options">
+                        ${q.options.map((option, optIndex) => `
+                            <div class="option" onclick="selectOption(${index}, ${optIndex})">
+                                <input type="radio" 
+                                       name="question${index}" 
+                                       id="q${index}_opt${optIndex}" 
+                                       value="${optIndex}">
+                                <label for="q${index}_opt${optIndex}">${option}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(quizBox);
+            });
+
+            const submitBtn = document.createElement('button');
+            submitBtn.className = 'submit-btn';
+            submitBtn.textContent = 'Submit Quiz';
+            submitBtn.onclick = submitQuiz;
+            container.appendChild(submitBtn);
+        }
+
+        function selectOption(questionIndex, optionIndex) {
+            userAnswers[questionIndex] = optionIndex;
+            document.getElementById(`q${questionIndex}_opt${optionIndex}`).checked = true;
+        }
+
+        function submitQuiz() {
+            if (Object.keys(userAnswers).length < quizData.questions.length) {
+                alert('Please answer all questions before submitting.');
+                return;
+            }
+
+            let score = 0;
+            
+            // Show correct/incorrect answers
+            quizData.questions.forEach((q, index) => {
+                const isCorrect = userAnswers[index] === q.correct;
+                if (isCorrect) {
+                    score++;
+                }
+                
+                // Highlight the selected answer
+                const selectedOption = document.querySelector(`#q${index}_opt${userAnswers[index]}`).parentElement;
+                const correctOption = document.querySelector(`#q${index}_opt${q.correct}`).parentElement;
+                
+                if (isCorrect) {
+                    selectedOption.style.background = '#d4edda';
+                    selectedOption.style.borderColor = '#28a745';
+                    selectedOption.innerHTML += ' <span style="color: #28a745; font-weight: bold;">✓ Correct</span>';
+                } else {
+                    selectedOption.style.background = '#f8d7da';
+                    selectedOption.style.borderColor = '#dc3545';
+                    selectedOption.innerHTML += ' <span style="color: #dc3545; font-weight: bold;">✗ Your answer</span>';
+                    
+                    correctOption.style.background = '#d4edda';
+                    correctOption.style.borderColor = '#28a745';
+                    correctOption.innerHTML += ' <span style="color: #28a745; font-weight: bold;">✓ Correct answer</span>';
+                }
+                
+                // Disable all options
+                document.querySelectorAll(`input[name="question${index}"]`).forEach(input => {
+                    input.disabled = true;
+                });
+            });
+
+            const percentage = Math.round((score / quizData.questions.length) * 100);
+            const passed = percentage >= 70;
+
+            // Disable submit button
+            document.querySelector('.submit-btn').disabled = true;
+            document.querySelector('.submit-btn').textContent = 'Quiz Submitted';
+            
+            // Scroll to top to show result
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            document.getElementById('result').style.display = 'block';
+            
+            const scoreElement = document.getElementById('score');
+            scoreElement.textContent = `${score} / ${quizData.questions.length} (${percentage}%)`;
+            scoreElement.className = 'score ' + (passed ? 'pass' : 'fail');
+
+            const messageElement = document.getElementById('result-message');
+            if (passed) {
+                messageElement.innerHTML = '🎉 <strong>PASSED!</strong><br>Excellent work! You have a solid understanding of this topic.';
+                messageElement.style.color = '#28a745';
+            } else {
+                messageElement.innerHTML = '📚 <strong>NOT PASSED</strong><br>Keep practicing! Review the workshop materials and try again.';
+                messageElement.style.color = '#dc3545';
+            }
+        }
+
+        function retakeQuiz() {
+            userAnswers = {};
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            renderQuiz();
+        }
+    </script>
+</body>
+</html>
